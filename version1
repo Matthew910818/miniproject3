@@ -1,0 +1,1148 @@
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <ctime>
+#include <array>
+#include <algorithm>
+#include <vector>
+#include <set>
+
+
+using namespace std;
+
+
+
+const int SIZE = 15;
+
+class Node
+{
+public:
+    int x;
+    int y;
+    std::array<std::array<int, SIZE>, SIZE> board;
+    bool operator<(const Node b) const
+    {
+        return this->x < b.x;
+    }
+};
+
+
+enum SPOT_STATE {
+    EMPTY = 0,
+    BLACK = 1,
+    WHITE = 2
+};
+
+int player;
+std::array<std::array<int, SIZE>, SIZE> board;
+Node first;
+set<Node> fish;
+int board_value(Node);
+vector<pair<int,int>> find1;
+
+int finalx = 7;
+int finaly = 7;
+
+
+
+
+
+
+void read_board(std::ifstream& fin) // 讀目前的board
+{
+    fin >> player;
+    for (int i = 0; i < SIZE; i++)
+    {
+        for (int j = 0; j < SIZE; j++)
+        {
+            fin >> board[i][j];
+        }
+    }
+    first.board = board;
+    fish.insert(first);
+}
+
+
+
+
+/*void findcheck()
+{
+    find1.clear();
+    find2.clear();
+    
+    for(int i=0;i<15;i++)
+    {
+        for(int j=0;j<15;j++)
+        {
+            if(board[i][j]== player)
+            {
+                find1.push_back(make_pair(i,j));
+            }
+            else if(board[i][j]== 3-player)
+            {
+                find2.push_back(make_pair(i, j));
+            }
+        }
+    }
+    
+    
+}*/
+
+
+
+
+int alphabeta(Node node, int depth, int a, int b, bool matthew, set<Node> pass)
+{
+    int record;
+    int flag = 0;
+    Node temp;
+    temp = node;
+    set<Node> visited = pass;
+    set<Node> now;
+    
+    find1.clear();
+    
+    for(int i=0;i<15;i++)
+    {
+        for(int j=0;j<15;j++)
+        {
+            if(node.board[i][j]!=0)
+            {
+                find1.push_back(make_pair(i,j));
+                //cout << " happy\n";
+            }
+        }
+    }
+    
+    
+    
+
+    if(depth == 3)
+    {
+        return board_value(node);
+    }
+    
+    if(matthew)
+    {
+        //cout << "hi\n";
+        int value = -1000000;
+        for(auto it : find1)
+        {
+            for(int i=it.first-2;i<=it.first+2;i++)
+            {
+                for(int j=it.second-2;j<=it.second+2;j++)
+                {
+                    if(i>=0 && i< 15 && j>=0 && j<15 && temp.board[i][j]==0 )//&& visited.find(temp)==visited.end())
+                    {
+                        temp.board[i][j] = player;
+                        visited.insert(temp);
+                        now = visited;
+                        record = value;
+                        value = max(value,alphabeta(temp, depth-1, a, b, false, visited));
+                        temp.board[i][j] = 0;
+                        
+                        if(depth == 4 && record<value)
+                        {
+                            finalx = i;
+                            finaly = j;
+                           // cout << "record" << record << endl;
+                           // cout << "value" << value << endl;
+                            //cout << "finalx= " << finalx << endl;
+                            //cout << "finaly= " << finaly << endl;
+        
+                        }
+                        a = max(a,value);
+                        if(a >= b)
+                        {
+                            flag = 1;
+                            break;
+                        }
+                    }
+                }
+                if(flag == 1)
+                {
+                    break;
+                }
+            }
+            if(flag == 1)
+            {
+                flag = 0;
+                break;
+            }
+        }
+        return value;
+    }
+    
+    else
+    {
+        //cout << "yo\n";
+        int value = 1000000;
+        for(auto it2 : find1)
+        {
+            for(int i=it2.first-2;i<=it2.first+2;i++)
+            {
+                for(int j=it2.second-2;j<=it2.second+2;j++)
+                {
+                    if(i>=0 && i< 15 && j>=0 && j<15 && temp.board[i][j]==0)// && visited.find(temp)==visited.end())
+                    {
+                        temp.board[i][j] = 3 - player;
+                        visited.insert(temp);
+                        now = visited;
+                        record = value;
+                        value = min(b,alphabeta(temp, depth-1, a, b, true, visited));
+                        temp.board[i][j] = 0;
+                        if(depth == 4 && record!=value)
+                        {
+                            finalx = i;
+                            finaly = j;
+                        }
+                        if(b <= a)
+                        {
+                            flag = 1;
+                            break;
+                        }
+                    }
+                }
+                if(flag == 1)
+                {
+                    flag = 0;
+                    break;
+                }
+            }
+            if(flag == 1)
+            {
+                flag = 0;
+                break;
+            }
+        }
+        return value;
+    }
+}
+
+
+
+int p5 = 30000;
+int p4_1 = 9000;
+int p4_2 = 8800;
+int p4_3 = 3;
+int p3_1 = 500;
+int p3_2 = 400;
+int p3_3 = 3;
+int p2_1 = 50;
+int p2_2 = 40;
+int p2_3 = 3;
+int s1 = 2900;
+
+
+
+int c5 = 10000;
+int c4_1 = 5300;
+int c4_2 = 4700;
+int c4_3 = 1;
+int c3_1 = 4600;
+int c3_2 = 1500;
+int c3_3 = 1;
+int c2_1 = 1250;
+int c2_2 = 1200;
+int c2_3 = 1;
+int cs1 = 7000;
+
+int live3 = 0;
+int dead3 = 0;
+
+int clive3 = 0;
+int cdead3 = 0;
+
+
+int board_value(Node node)
+{
+    int good = 0;
+    int danger = 0;
+    int countp = 0;
+    int countc = 0;
+    
+    for(int i=0; i<15; i++)  //橫的
+    {
+        for(int j=0; j<15; j++)
+        {
+            if(node.board[i][j] == player) // 我的旗
+            {
+                int temp = 0;
+                int recordj = j;
+                if(node.board[i][j-1] == 0)
+                {
+                    if(node.board[i][j+1] == 0 && node.board[i][j+2] == player && node.board[i][j+3] == player && node.board[i][j+4] == 0)
+                    {
+                        good++;
+                        countp += s1;
+                    }
+                    if(node.board[i][j+1] == player && node.board[i][j+2] == 0 && node.board[i][j+3] == player && node.board[i][j+4] == 0)
+                    {
+                        good++;
+                        countp += s1;
+                    }
+                    while(node.board[i][j] == player)
+                    {
+                        j++;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countp += p5;
+                    }
+                    else if(temp == 4 && j<15 && node.board[i][j] == 0) //活四
+                    {
+                        countp += p4_1;
+                    }
+                    else if(temp == 4 && j<15 && node.board[i][j] == 3 - player) //死四
+                    {
+                        countp += p4_2;
+                    }
+                    else if(temp == 3 && j<15 && node.board[i][j] == 0) //活三
+                    {
+                        countp += p3_1;
+                    }
+                    else if(temp == 3 && j<15 && node.board[i][j] == 3 - player) //死三
+                    {
+                        countp += p3_2;
+                    }
+                    else if(temp == 2 && j<15 && node.board[i][j] == 0) //活二
+                    {
+                        countp += p2_1;
+                    }
+                    else if(temp == 2 && j<15 && node.board[i][j] == 3 - player) //死二
+                    {
+                        countp += p2_2;
+                    }
+                    j = recordj;
+                }
+                
+                else if(node.board[i][j-1] == 3 - player)
+                {
+                    while(node.board[i][j] == player)
+                    {
+                        j++;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countp += p5;
+                    }
+                    else if(temp == 4 && j<15 && node.board[i][j] == 0) //死四
+                    {
+                        countp += p4_2;
+                    }
+                    else if(temp == 4 && j<15 && node.board[i][j] == 3 - player) //雙死四
+                    {
+                        countp += p4_3;
+                    }
+                    else if(temp == 3 && j<15 && node.board[i][j] == 0) //死三
+                    {
+                        countp += p3_2;
+                    }
+                    else if(temp == 3 && j<15 && node.board[i][j] == 3 - player) //雙死三
+                    {
+                        countp += p3_3;
+                    }
+                    else if(temp == 2 && j<15 && node.board[i][j] == 0) //死二
+                    {
+                        countp += p2_2;
+                    }
+                    else if(temp == 2 && j<15 && node.board[i][j] == 3 - player) //雙死二
+                    {
+                        countp += p2_3;
+                    }
+                    j = recordj;
+                }
+            }
+            
+            
+            else if(node.board[i][j] == 3 - player) // 對手旗
+            {
+                int temp = 0;
+                int recordj = j;
+                if(node.board[i][j-1] == 0)
+                {
+                    if(node.board[i][j+1] == 0 && node.board[i][j+2] == 3 - player && node.board[i][j+3] == 3 - player && node.board[i][j+4] == 0)
+                    {
+                        danger++;
+                        countc += cs1;
+                    }
+                    if(node.board[i][j+1] == 3 - player && node.board[i][j+2] == 0 && node.board[i][j+3] == 3 - player && node.board[i][j+4] == 0)
+                    {
+                        danger++;
+                        countc += cs1;
+                    }
+                    while(node.board[i][j] == 3 - player)
+                    {
+                        j++;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countc += c5;
+                    }
+                    else if(temp == 4 && j<15 && node.board[i][j] == 0) //活四
+                    {
+                        danger++;
+                        countc += c4_1;
+                    }
+                    else if(temp == 4 && j<15 && node.board[i][j] == player) //死四
+                    {
+                        danger++;
+                        countc += c4_2;
+                    }
+                    else if(temp == 3 && j<15 && node.board[i][j] == 0) //活三
+                    {
+                        countc += c3_1;
+                    }
+                    else if(temp == 3 && j<15 && node.board[i][j] == player) //死三
+                    {
+                        countc += c3_2;
+                    }
+                    else if(temp == 2 && j<15 && node.board[i][j] == 0) //活二
+                    {
+                        countc += c2_1;
+                    }
+                    else if(temp == 2 && j<15 && node.board[i][j] == player) //死二
+                    {
+                        countc += c2_2;
+                    }
+                    j = recordj;
+                }
+                
+                else if(node.board[i][j-1] == player)
+                {
+                    while(node.board[i][j] == 3 - player)
+                    {
+                        j++;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countc += c5;
+                    }
+                    else if(temp == 4 && j<15 && node.board[i][j] == 0) //死四
+                    {
+                        danger++;
+                        countc += c4_2;
+                    }
+                    else if(temp == 4 && j<15 && node.board[i][j] == player) //雙死四
+                    {
+                        countc += c4_3;
+                    }
+                    else if(temp == 3 && j<15 && node.board[i][j] == 0) //死三
+                    {
+                        countc += c3_2;
+                    }
+                    else if(temp == 3 && j<15 && node.board[i][j] == player) //雙死三
+                    {
+                        countc += c3_3;
+                    }
+                    else if(temp == 2 && j<15 && node.board[i][j] == 0) //死二
+                    {
+                        countc += c2_2;
+                    }
+                    else if(temp == 2 && j<15 && node.board[i][j] == player) //雙死二
+                    {
+                        countc += c2_3;
+                    }
+                    j = recordj;
+                }
+            }
+        }
+    }
+    
+    
+    
+    for(int j=0; j<15; j++)  //直的
+    {
+        for(int i=0; i<15; i++)
+        {
+            if(node.board[i][j] == player) // 我的旗
+            {
+                int temp = 0;
+                int recordi = i;
+                if(i-1>=0 && node.board[i-1][j] == 0)
+                {
+                    if(node.board[i+1][j] == 0 && node.board[i+2][j] == player && node.board[i+3][j] == player && node.board[i+4][j] == 0)
+                    {
+                        good++;
+                        countp += s1;
+                    }
+                    if(node.board[i+1][j] == player && node.board[i+2][j] == 0 && node.board[i+3][j] == player && node.board[i+4][j] == 0)
+                    {
+                        good++;
+                        countp += s1;
+                    }
+                    while(node.board[i][j] == player)
+                    {
+                        i++;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countp += p5;
+                    }
+                    else if(temp == 4 && i<15 && node.board[i][j] == 0) //活四
+                    {
+                        countp += p4_1;
+                    }
+                    else if(temp == 4 && i<15 && node.board[i][j] == 3 - player) //死四
+                    {
+                        countp += p4_2;
+                    }
+                    else if(temp == 3 && i<15 && node.board[i][j] == 0) //活三
+                    {
+                        countp += p3_1;
+                    }
+                    else if(temp == 3 && i<15 && node.board[i][j] == 3 - player) //死三
+                    {
+                        countp += p3_2;
+                    }
+                    else if(temp == 2 && i<15 && node.board[i][j] == 0) //活二
+                    {
+                        countp += p2_1;
+                    }
+                    else if(temp == 2 && i<15 && node.board[i][j] == 3 - player) //死二
+                    {
+                        countp += p2_2;
+                    }
+                    i = recordi;
+                }
+                
+                else if(i-1>=0 && node.board[i-1][j] == 3 - player)
+                {
+                    while(node.board[i][j] == player)
+                    {
+                        i++;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countp += p5;
+                    }
+                    else if(temp == 4 && i<15 && node.board[i][j] == 0) //死四
+                    {
+                        countp += p4_2;
+                    }
+                    else if(temp == 4 && i<15 && node.board[i][j] == 3 - player) //雙死四
+                    {
+                        countp += p4_3;
+                    }
+                    else if(temp == 3 && i<15 && node.board[i][j] == 0) //死三
+                    {
+                        countp += p3_2;
+                    }
+                    else if(temp == 3 && i<15 && node.board[i][j] == 3 - player) //雙死三
+                    {
+                        countp += p3_3;
+                    }
+                    else if(temp == 2 && i<15 && node.board[i][j] == 0) //死二
+                    {
+                        countp += p2_2;
+                    }
+                    else if(temp == 2 && i+1<15 && node.board[i][j] == 3 - player) //雙死二
+                    {
+                        countp += p2_3;
+                    }
+                    i = recordi;
+                }
+            }
+            
+            
+            else if(node.board[i][j] == 3 - player) // 對手旗
+            {
+                int temp = 0;
+                int recordi = i;
+                if(i-1>=0 && node.board[i-1][j] == 0)
+                {
+                    if(node.board[i+1][j] == 0 && node.board[i+2][j] == 3 - player && node.board[i+3][j] == 3 - player && node.board[i+4][j] == 0)
+                    {
+                        danger++;
+                        countp += cs1;
+                    }
+                    if(node.board[i+1][j] == 3 - player && node.board[i+2][j] == 0 && node.board[i+3][j] == 3 - player && node.board[i+4][j] == 0)
+                    {
+                        danger++;
+                        countp += cs1;
+                    }
+                    while(node.board[i][j] == 3 - player)
+                    {
+                        i++;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countc += c5;
+                    }
+                    else if(temp == 4 && i<15 && node.board[i][j] == 0) //活四
+                    {
+                        danger++;
+                        countc += c4_1;
+                    }
+                    else if(temp == 4 && i<15 && node.board[i][j] == player) //死四
+                    {
+                        danger++;
+                        countc += c4_2;
+                    }
+                    else if(temp == 3 && i<15 && node.board[i][j] == 0) //活三
+                    {
+                        countc += c3_1;
+                    }
+                    else if(temp == 3 && i<15 && node.board[i][j] == player) //死三
+                    {
+                        countc += c3_2;
+                    }
+                    else if(temp == 2 && i<15 && node.board[i][j] == 0) //活二
+                    {
+                        countc += c2_1;
+                    }
+                    else if(temp == 2 && i<15 && node.board[i][j] == player) //死二
+                    {
+                        countc += c2_2;
+                    }
+                    i = recordi;
+                }
+                
+                else if(i-1>=0 && node.board[i-1][j] == player)
+                {
+                    while(node.board[i][j] == 3 - player)
+                    {
+                        i++;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countc += c5;
+                    }
+                    else if(temp == 4 && i<15 && node.board[i][j] == 0) //死四
+                    {
+                        danger++;
+                        countc += c4_2;
+                    }
+                    else if(temp == 4 && i<15 && node.board[i][j] == player) //雙死四
+                    {
+                        countc += c4_3;
+                    }
+                    else if(temp == 3 && i<15 && node.board[i][j] == 0) //死三
+                    {
+                        countc += c3_2;
+                    }
+                    else if(temp == 3 && i<15 && node.board[i][j] == player) //雙死三
+                    {
+                        countc += c3_3;
+                    }
+                    else if(temp == 2 && i<15 && node.board[i][j] == 0) //死二
+                    {
+                        countc += c2_2;
+                    }
+                    else if(temp == 2 && i<15 && node.board[i][j] == player) //雙死二
+                    {
+                        countc += c2_3;
+                    }
+                    i = recordi;
+                }
+            }
+        }
+    }
+    
+    
+    for(int i=0;i<15;i++) // 左上到右下
+    {
+        for(int j=0;j<15;j++)
+        {
+            if(node.board[i][j] == player)
+            {
+                int recordi = i;
+                int recordj = j;
+                int temp = 0;
+                if(i-1>=0 && j-1>=0 && node.board[i-1][j-1] == 0)
+                {
+                    if(node.board[i+1][j+1] == 0 && node.board[i+2][j+2] == player && node.board[i+3][j+3] == player && node.board[i+4][j+4] == 0)
+                    {
+                        good++;
+                        countp += s1;
+                    }
+                    if(node.board[i+1][j+1] == player && node.board[i+2][j+2] == 0 && node.board[i+3][j+3] == player && node.board[i+4][j+4] == 0)
+                    {
+                        good++;
+                        countp += s1;
+                    }
+                    while(node.board[i][j] == player)
+                    {
+                        i++;
+                        j++;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countp += p5;
+                    }
+                    else if(temp == 4 && i<15 && j<15 && node.board[i][j] == 0) //活四
+                    {
+                        countp += p4_1;
+                    }
+                    else if(temp == 4 && i<15 && j<15 && node.board[i][j] == 3 - player) //死四
+                    {
+                        countp += p4_2;
+                    }
+                    else if(temp == 3 && i<15 && j<15 && node.board[i][j] == 0) //活三
+                    {
+                        countp += p3_1;
+                    }
+                    else if(temp == 3 && i<15 && j<15 && node.board[i][j] == 3 - player) //死三
+                    {
+                        countp += p3_2;
+                    }
+                    else if(temp == 2 && i<15 && j<15 && node.board[i][j] == 0) //活二
+                    {
+                        countp += p2_1;
+                    }
+                    else if(temp == 2 && i<15 && j<15 && node.board[i][j] == 3 - player) //死二
+                    {
+                        countp += p2_2;
+                    }
+                    i = recordi;
+                    j = recordj;
+                }
+                else if(i-1>=0 && j-1>=0 && node.board[i-1][j-1] == 3 - player)
+                {
+                    while(node.board[i][j] == player)
+                    {
+                        i++;
+                        j++;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countp += p5;
+                    }
+                    else if(temp == 4 && i<15 && j<15 && node.board[i][j] == 0) //死四
+                    {
+                        countp += p4_2;
+                    }
+                    else if(temp == 4 && i<15 && j<15 && node.board[i][j] == 3 - player) //雙死四
+                    {
+                        countp += p4_3;
+                    }
+                    else if(temp == 3 && i<15 && j<15 && node.board[i][j] == 0) //死三
+                    {
+                        countp += p3_2;
+                    }
+                    else if(temp == 3 && i<15 && j<15 && node.board[i][j] == 3 - player) //雙死三
+                    {
+                        countp += p3_3;
+                    }
+                    else if(temp == 2 && i<15 && j<15 && node.board[i][j] == 0) //死二
+                    {
+                        countp += p2_2;
+                    }
+                    else if(temp == 2 && i<15 && j<15 && node.board[i][j] == 3 - player) //雙死二
+                    {
+                        countp += p2_3;
+                    }
+                    i = recordi;
+                    j = recordj;
+                }
+            }
+            
+            else if(node.board[i][j] == 3 - player)
+            {
+                int recordi = i;
+                int recordj = j;
+                int temp = 0;
+                if(i-1>=0 && j-1>=0 && node.board[i-1][j-1] == 0)
+                {
+                    if(node.board[i+1][j+1] == 0 && node.board[i+2][j+2] == 3 - player && node.board[i+3][j+3] == 3 - player && node.board[i+4][j+4] == 0)
+                    {
+                        danger++;
+                        countc += cs1;
+                    }
+                    if(node.board[i+1][j+1] == 3 - player && node.board[i+2][j+2] == 0 && node.board[i+3][j+3] == 3 - player && node.board[i+4][j+4] == 0)
+                    {
+                        danger++;
+                        countc += cs1;
+                    }
+                    while(node.board[i][j] == 3 - player)
+                    {
+                        i++;
+                        j++;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countc += c5;
+                    }
+                    else if(temp == 4 && i<15 && j<15 && node.board[i][j] == 0) //活四
+                    {
+                        danger++;
+                        countc += c4_1;
+                    }
+                    else if(temp == 4 && i<15 && j<15 && node.board[i][j] == player) //死四
+                    {
+                        danger++;
+                        countc += c4_2;
+                    }
+                    else if(temp == 3 && i<15 && j<15 && node.board[i][j] == 0) //活三
+                    {
+                        countc += c3_1;
+                    }
+                    else if(temp == 3 && i<15 && j<15 && node.board[i][j] == player) //死三
+                    {
+                        countc += c3_2;
+                    }
+                    else if(temp == 2 && i<15 && j<15 && node.board[i][j] == 0) //活二
+                    {
+                        countc += c2_1;
+                    }
+                    else if(temp == 2 && i<15 && j<15 && node.board[i][j] == player) //死二
+                    {
+                        countc += c2_2;
+                    }
+                    i = recordi;
+                    j = recordj;
+                }
+                else if(i-1>=0 && j-1>=0 && node.board[i-1][j-1] ==  player)
+                {
+                    while(node.board[i][j] == 3 - player)
+                    {
+                        i++;
+                        j++;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countc += c5;
+                    }
+                    else if(temp == 4 && i<15 && j<15 && node.board[i][j] == 0) //死四
+                    {
+                        danger++;
+                        countc += c4_2;
+                    }
+                    else if(temp == 4 && i<15 && j<15 && node.board[i][j] == player) //雙死四
+                    {
+                        countc += c4_3;
+                    }
+                    else if(temp == 3 && i<15 && j<15 && node.board[i][j] == 0) //死三
+                    {
+                        countc += c3_2;
+                    }
+                    else if(temp == 3 && i<15 && j<15 && node.board[i][j] == player) //雙死三
+                    {
+                        countc += c3_3;
+                    }
+                    else if(temp == 2 && i<15 && j<15 && node.board[i][j] == 0) //死二
+                    {
+                        countc += c2_2;
+                    }
+                    else if(temp == 2 && i<15 && j<15 && node.board[i][j] == player) //雙死二
+                    {
+                        countc += c2_3;
+                    }
+                    i = recordi;
+                    j = recordj;
+                }
+            }
+        }
+    }
+    
+    
+    for(int i=0;i<15;i++) // 右上到左下
+    {
+        for(int j=0;j<15;j++)
+        {
+            if(node.board[i][j] == player)
+            {
+                int recordi = i;
+                int recordj = j;
+                int temp = 0;
+                if(i-1>=0 && j+1<15 && node.board[i-1][j+1] == 0)
+                {
+                    if(node.board[i+1][j-1] == 0 && node.board[i+2][j-2] == player && node.board[i+3][j-3] == player && node.board[i+4][j-4] == 0)
+                    {
+                        good++;
+                        countp += s1;
+                    }
+                    if(node.board[i+1][j-1] == player && node.board[i+2][j-2] == 0 && node.board[i+3][j-3] == player && node.board[i+4][j-4] == 0)
+                    {
+                        good++;
+                        countp += s1;
+                    }
+                    while(node.board[i][j] == player)
+                    {
+                        i++;
+                        j--;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countp += p5;
+                    }
+                    else if(temp == 4 && i<15 && j>=0 && node.board[i][j] == 0) //活四
+                    {
+                        countp += p4_1;
+                    }
+                    else if(temp == 4 && i<15 && j>=0 && node.board[i][j] == 3 - player) //死四
+                    {
+                        countp += p4_2;
+                    }
+                    else if(temp == 3 && i<15 && j>=0 && node.board[i][j] == 0) //活三
+                    {
+                        countp += p3_1;
+                    }
+                    else if(temp == 3 && i<15 && j>=0 && node.board[i][j] == 3 - player) //死三
+                    {
+                        countp += p3_2;
+                    }
+                    else if(temp == 2 && i<15 && j>=0 && node.board[i][j] == 0) //活二
+                    {
+                        countp += p2_1;
+                    }
+                    else if(temp == 2 && i<15 && j>=0 && node.board[i][j] == 3 - player) //死二
+                    {
+                        countp += p2_2;
+                    }
+                    i = recordi;
+                    j = recordj;
+                }
+                else if(i-1>=0 && j+1<15 && node.board[i-1][j+1] == 3 - player)
+                {
+                    while(node.board[i][j] == player)
+                    {
+                        i++;
+                        j--;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countp += p5;
+                    }
+                    else if(temp == 4 && i<15 && j>=0 && node.board[i][j] == 0) //死四
+                    {
+                        countp += p4_2;
+                    }
+                    else if(temp == 4 && i<15 && j>=0 && node.board[i][j] == 3 - player) //雙死四
+                    {
+                        countp += p4_3;
+                    }
+                    else if(temp == 3 && i<15 && j>=0 && node.board[i][j] == 0) //死三
+                    {
+                        countp += p3_2;
+                    }
+                    else if(temp == 3 && i<15 && j>=0 && node.board[i][j] == 3 - player) //雙死三
+                    {
+                        countp += p3_3;
+                    }
+                    else if(temp == 2 && i<15 && j>=0 && node.board[i][j] == 0) //死二
+                    {
+                        countp += p2_2;
+                    }
+                    else if(temp == 2 && i<15 && j>=0 && node.board[i][j] == 3 - player) //雙死二
+                    {
+                        countp += p2_3;
+                    }
+                    i = recordi;
+                    j = recordj;
+                }
+            }
+            
+            else if(node.board[i][j] == 3 - player)
+            {
+                int recordi = i;
+                int recordj = j;
+                int temp = 0;
+                if(i-1>=0 && j+1<15 && node.board[i-1][j+1] == 0)
+                {
+                    if(node.board[i+1][j-1] == 0 && node.board[i+2][j-2] == player && node.board[i+3][j-3] == player && node.board[i+4][j-4] == 0)
+                    {
+                        danger++;
+                        countc += cs1;
+                    }
+                    if(node.board[i+1][j-1] == player && node.board[i+2][j-2] == 0 && node.board[i+3][j-3] == player && node.board[i+4][j-4] == 0)
+                    {
+                        danger++;
+                        countc += cs1;
+                    }
+                    while(node.board[i][j] == 3 - player)
+                    {
+                        i++;
+                        j--;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countc += c5;
+                    }
+                    else if(temp == 4 && i<15 && j>=0 && node.board[i][j] == 0) //活四
+                    {
+                        danger++;
+                        countc += c4_1;
+                    }
+                    else if(temp == 4 && i<15 && j>=0 && node.board[i][j] == player) //死四
+                    {
+                        danger++;
+                        countc += c4_2;
+                    }
+                    else if(temp == 3 && i<15 && j>=0 && node.board[i][j] == 0) //活三
+                    {
+                        countc += c3_1;
+                    }
+                    else if(temp == 3 && i<15 && j>=0 && node.board[i][j] == player) //死三
+                    {
+                        countc += c3_2;
+                    }
+                    else if(temp == 2 && i<15 && j>=0 && node.board[i][j] == 0) //活二
+                    {
+                        countc += c2_1;
+                    }
+                    else if(temp == 2 && i<15 && j>=0 && node.board[i][j] == player) //死二
+                    {
+                        countc += c2_2;
+                    }
+                    i = recordi;
+                    j = recordj;
+                }
+                else if(i-1>=0 && j+1<15 && node.board[i-1][j+1] ==  player)
+                {
+                    while(node.board[i][j] == 3 - player)
+                    {
+                        i++;
+                        j--;
+                        temp++;
+                    }
+                    if(temp == 5)
+                    {
+                        countc += c5;
+                    }
+                    else if(temp == 4 && i<15 && j>=0 && node.board[i][j] == 0) //死四
+                    {
+                        danger++;
+                        countc += c4_2;
+                    }
+                    else if(temp == 4 && i<15 && j>=0 && node.board[i][j] == player) //雙死四
+                    {
+                        countc += c4_3;
+                    }
+                    else if(temp == 3 && i<15 && j>=0 && node.board[i][j] == 0) //死三
+                    {
+                        countc += c3_2;
+                    }
+                    else if(temp == 3 && i<15 && j>=0 && node.board[i][j] == player) //雙死三
+                    {
+                        countc += c3_3;
+                    }
+                    else if(temp == 2 && i<15 && j>=0 && node.board[i][j] == 0) //死二
+                    {
+                        countc += c2_2;
+                    }
+                    else if(temp == 2 && i<15 && j>=0 && node.board[i][j] == player) //雙死二
+                    {
+                        countc += c2_3;
+                    }
+                    i = recordi;
+                    j = recordj;
+                }
+            }
+        }
+    }
+    
+    
+    
+    if(danger == 0)
+    {
+        return countp - countc;
+    }
+    else
+    {
+        return countp - countc -10000;
+    }
+    
+}
+
+
+
+void write_valid_spot(std::ofstream& fout)
+{
+   // srand(time(NULL));
+   // findcheck();
+    alphabeta(first, 4, -1000000, 1000000, true, fish);
+    int x = finalx;
+    int y = finaly;
+    
+    if (board[x][y] == EMPTY)
+    {
+        fout << x << " " << y << std::endl;
+        fout.flush();
+    }
+    else
+    {
+        x = y = 0;
+        
+        fout << x << " " << y << std::endl;
+        fout.flush();
+    }
+}
+
+int main(int, char** argv) {
+    std::ifstream fin(argv[1]);
+    std::ofstream fout(argv[2]);
+    read_board(fin);
+    write_valid_spot(fout);
+    fin.close();
+    fout.close();
+    return 0;
+}
+
+
+/*#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <ctime>
+#include <array>
+
+enum SPOT_STATE {
+    EMPTY = 0,
+    BLACK = 1,
+    WHITE = 2
+};
+
+int player;
+const int SIZE = 15;
+std::array<std::array<int, SIZE>, SIZE> board;
+
+void read_board(std::ifstream& fin) {
+    fin >> player;
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            fin >> board[i][j];
+        }
+    }
+}
+
+void write_valid_spot(std::ofstream& fout) {
+    srand(time(NULL));
+    int x, y;
+    // Keep updating the output until getting killed.
+    while(true) {
+        // Choose a random spot.
+        int x = (rand() % SIZE);
+        int y = (rand() % SIZE);
+        if (board[x][y] == EMPTY) {
+            fout << x << " " << y << std::endl;
+            // Remember to flush the output to ensure the last action is written to file.
+            fout.flush();
+        }
+    }
+}
+
+int main(int, char** argv) {
+    std::ifstream fin(argv[1]);
+    std::ofstream fout(argv[2]);
+    read_board(fin);
+    write_valid_spot(fout);
+    fin.close();
+    fout.close();
+    return 0;
+}*/
+
